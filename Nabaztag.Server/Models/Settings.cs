@@ -17,6 +17,8 @@ namespace Nabaztag.Server.Models
         public string Locale { get; set; }
         public string ClockPhrase { get; set; }
         public Voice PrefferedVoice { get; set; }
+
+        public string TtsUrl { get; set; }
     }
 
 }

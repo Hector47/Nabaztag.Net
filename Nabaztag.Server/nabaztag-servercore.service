@@ -1,0 +1,14 @@
+[Unit]
+Description=Nabaztag ServerCore
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+ExecStart=/opt/dotnet/dotnet /home/pi/nabsrv/Nabaztag.ServerCore.exe -f -i
+WorkingDirectory=/home/pi/nabsrv/
+User=root
+
+[Install]
+WantedBy=multi-user.target

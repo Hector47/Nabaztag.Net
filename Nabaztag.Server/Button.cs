@@ -38,13 +38,16 @@ namespace Nabaztag.Server
             _pin = pin;
             _gpioController.OpenPin(_pin, PinMode.Input);
             // For some reason, the libgpiod doesn't work properly for the trigging, so need to be done manually
-            //_gpioController.RegisterCallbackForPinValueChangedEvent(_pin, PinEventTypes.Falling | PinEventTypes.Rising, pinChangeEvent);
+            _gpioController.RegisterCallbackForPinValueChangedEvent(_pin, PinEventTypes.Falling | PinEventTypes.Rising, pinChangeEvent);
             _lastActionTimer = new Timer(ButtonEventTimer);
             _running = true;            
         }        
 
         public PinValue PinValue => _gpioController.Read(_pin);
-
+        private void pinChangeEvent(object sender, PinValueChangedEventArgs args)
+        {
+            Console.WriteLine(DateTime.Now + " " + args.PinNumber + " pin changed");
+        }
         private void ButtonEventTimer(object state)
         {
             ((Timer)state).Change(Timeout.Infinite, 0);            

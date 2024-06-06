@@ -22,9 +22,14 @@ namespace rpi_ws281x
 		public WS281x(Settings settings)
 		{
 			_ws2811 = new ws2811_t();
-			//Pin the object in memory. Otherwies GC will probably move the object to another memory location.
-			//This would cause errors because the native library has a pointer on the memory location of the object.
-			_ws2811Handle = GCHandle.Alloc(_ws2811, GCHandleType.Pinned);
+            ////Pin the object in memory. Otherwies GC will probably move the object to another memory location.
+            ////This would cause errors because the native library has a pointer on the memory location of the object.
+            // Allocate unmanaged memory for _ws2811
+            IntPtr ptr = Marshal.AllocHGlobal(Marshal.SizeOf(_ws2811));
+            // Manually marshal the fields of _ws2811 to the allocated unmanaged memory
+            Marshal.StructureToPtr(_ws2811, ptr, false);
+			// Pin the unmanaged memory
+			_ws2811Handle = GCHandle.Alloc(ptr, GCHandleType.Pinned);
 
 			_ws2811.dmanum	= settings.DMAChannel;
 			_ws2811.freq	= settings.Frequency;
