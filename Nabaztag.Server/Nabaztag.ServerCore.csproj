@@ -30,16 +30,22 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Choreographies\1.chor">
+    <None Update="choreographies\1.chor">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Choreographies\2.chor">
+    <None Update="choreographies\2.chor">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Choreographies\3.chor">
+    <None Update="choreographies\3.chor">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Choreographies\4.chor">
+    <None Update="choreographies\4.chor">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="installservercore.sh">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="nabaztag-servercore.service">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="settings.json">

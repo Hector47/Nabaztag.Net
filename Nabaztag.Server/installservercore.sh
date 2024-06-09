@@ -1,7 +1,7 @@
 #!/bin/bash
 
-echo "Make sure that dotnet 8 is instal in /opt/dotnet"
-#sudo curl -sSL https://dot.net/v1/dotnet-install.sh | sudo bash /dev/stdin --version latest --verbose --runtime aspnetcore --install-dir “/opt/dotnet”
+echo "Please make sure that .NET 8 is instal in /opt/dotnet"
+#sudo curl -sSL https://dot.net/v1/dotnet-install.sh | sudo bash /dev/stdin --version "8.0.6" --verbose --runtime aspnetcore --install-dir "/opt/dotnet"
 echo "Installation started for Nabaztag.ServerCore"
 echo "Stopping any previous service"
 sudo systemctl is-active --quiet nabd.socket && sudo systemctl stop nabd.socket
@@ -12,7 +12,7 @@ sudo systemctl is-active --quiet nabaztag-servercore && sudo systemctl stop naba
 echo "Preparing service and config files"
 dir=`pwd`
 IFS='/' read -a subdir <<< ${dir}
-search='s+/home/pi/nabsrv+'${dir}'+g'
+search='s+/opt/nabsrv+'${dir}'+g'
 sudo sed -i ${search} nabaztag-servercore.service
 echo "Installing service in systemd"
 sudo cp nabaztag-servercore.service /etc/systemd/system/nabaztag-servercore.service

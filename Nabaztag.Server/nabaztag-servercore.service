@@ -6,8 +6,8 @@ StartLimitIntervalSec=0
 Type=simple
 Restart=always
 RestartSec=1
-ExecStart=/opt/dotnet/dotnet /home/pi/nabsrv/Nabaztag.ServerCore.exe -f -i
-WorkingDirectory=/home/pi/nabsrv/
+ExecStart=/opt/dotnet/dotnet /opt/nabsrv/Nabaztag.ServerCore.exe -f -i
+WorkingDirectory=/opt/nabsrv/
 User=root
 
 [Install]
