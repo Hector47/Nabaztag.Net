@@ -772,11 +772,15 @@ namespace Nabaztag.Server
             {
                 _state.State = StateType.Playing;
                 BoradcastState();
+                List<string> signaturePlaylist = null;
                 if (msg.Signature != null)
                 {
+                    signaturePlaylist = new List<string>(msg.Signature.AudioList.Length);
                     foreach (var audio in msg.Signature.AudioList)
                     {
-                        PlayAndWait(FindMusic(audio));
+                        var signatureToPlay = FindMusic(audio);
+                        signaturePlaylist.Add(signatureToPlay);
+                        PlayAndWait(signatureToPlay);
                     }
                 }
 
@@ -794,6 +798,15 @@ namespace Nabaztag.Server
                     foreach (var audio in body?.AudioList)
                     {
                         PlayAndWait(FindMusic(audio));
+                    }
+                }
+
+                //Replay the signature at the end
+                if (signaturePlaylist != null)
+                {
+                    foreach (var audio in signaturePlaylist)
+                    {
+                        PlayAndWait(audio);
                     }
                 }
 
@@ -1225,6 +1238,7 @@ namespace Nabaztag.Server
 
         private static void PlayAndWait(string fullName)
         {
+            LogInfo.Log($"PlayAndWait: {fullName}", LogLevel.Debug);
             Sound.Play(fullName);
             while (Sound.IsPlaying)
             {
@@ -1232,8 +1246,9 @@ namespace Nabaztag.Server
             }
         }
 
-        private static string FindMusic(string toFind)
+        private static string FindMusic(string toFindList)
         {
+            LogInfo.Log($"FindMusic: {toFindList}", LogLevel.Debug);
             // Directory structure for the sounds in the pynab strcuture
             // /home/pi/pynab/nabXXX/sounds/nabXXX/file.mp3
             // /home/pi/pynab/nabXXX/sounds/fr-FR/nabXXX/file.mp3
@@ -1241,98 +1256,102 @@ namespace Nabaztag.Server
             // File pattern arrives like this: nabXXX/file.mp3
             // Randome file in a specific directory: nabXXX/*.mp3
             // Randome file in a specific directory: nabXXX/otherdir/*.mp3
+            
+            var toFindArray = toFindList.Split(';');
 
-            // First search in the directory without locale
-            try
+            foreach (var toFind in toFindArray)
             {
-                var dirToFind = toFind.Substring(0, toFind.LastIndexOf('/'));
-                var appName = toFind.Substring(0, toFind.IndexOf('/'));
-                var di = new DirectoryInfo($"{_path}/../{PyNabDirectory}/{appName}/{SoundDirectory}/{dirToFind}");
-                var searchPAttern = toFind.Substring(toFind.LastIndexOf('/') + 1);
-                var files = di.GetFiles(searchPAttern, SearchOption.TopDirectoryOnly);
-                if (files.Length > 0)
+                // First search in the directory without locale
+                try
                 {
-                    return files[new Random().Next(files.Length - 1)].FullName;
+                    var dirToFind = toFind.Substring(0, toFind.LastIndexOf('/'));
+                    var appName = toFind.Substring(0, toFind.IndexOf('/'));
+                    var di = new DirectoryInfo($"{_path}/../{PyNabDirectory}/{appName}/{SoundDirectory}/{dirToFind}");
+                    var searchPAttern = toFind.Substring(toFind.LastIndexOf('/') + 1);
+                    var files = di.GetFiles(searchPAttern, SearchOption.TopDirectoryOnly);
+                    if (files.Length > 0)
+                    {
+                        return files[new Random().Next(files.Length - 1)].FullName;
+                    }
                 }
-            }
-            catch
-            { }
+                catch
+                { }
 
-            // Then search in the directory with locale
-            try
-            {
-                var dirToFind = toFind.Substring(0, toFind.LastIndexOf('/'));
-                var appName = toFind.Substring(0, toFind.IndexOf('/'));
-                var di = new DirectoryInfo($"{_path}/../{PyNabDirectory}/{appName}/{SoundDirectory}/{_locale}/{dirToFind}");
-                var searchPAttern = toFind.Substring(toFind.LastIndexOf('/') + 1);
-                var files = di.GetFiles(searchPAttern, SearchOption.TopDirectoryOnly);
-                if (files.Length > 0)
+                // Then search in the directory with locale
+                try
                 {
-                    return files[new Random().Next(files.Length - 1)].FullName;
+                    var dirToFind = toFind.Substring(0, toFind.LastIndexOf('/'));
+                    var appName = toFind.Substring(0, toFind.IndexOf('/'));
+                    var di = new DirectoryInfo($"{_path}/../{PyNabDirectory}/{appName}/{SoundDirectory}/{_locale}/{dirToFind}");
+                    var searchPAttern = toFind.Substring(toFind.LastIndexOf('/') + 1);
+                    var files = di.GetFiles(searchPAttern, SearchOption.TopDirectoryOnly);
+                    if (files.Length > 0)
+                    {
+                        return files[new Random().Next(files.Length - 1)].FullName;
+                    }
                 }
-            }
-            catch
-            { }
+                catch
+                { }
 
-            // Try absolute path
-            try
-            {
-                var dirToFind = toFind.Substring(0, toFind.LastIndexOf('/'));
-                var di = new DirectoryInfo($"{dirToFind}");
-                var searchPAttern = toFind.Substring(toFind.LastIndexOf('/') + 1);
-                var files = di.GetFiles(searchPAttern, SearchOption.AllDirectories);
-                if (files.Length > 0)
+                // Try absolute path
+                try
                 {
-                    return files[new Random().Next(files.Length - 1)].FullName;
+                    var dirToFind = toFind.Substring(0, toFind.LastIndexOf('/'));
+                    var di = new DirectoryInfo($"{dirToFind}");
+                    var searchPAttern = toFind.Substring(toFind.LastIndexOf('/') + 1);
+                    var files = di.GetFiles(searchPAttern, SearchOption.AllDirectories);
+                    if (files.Length > 0)
+                    {
+                        return files[new Random().Next(files.Length - 1)].FullName;
+                    }
                 }
-            }
-            catch
-            { }
+                catch
+                { }
 
-            // Try for ../../../../somewhere/file.mp3
-            try
-            {
-                var dirToFind = toFind.Substring(0, toFind.LastIndexOf('/'));
-                var di = new DirectoryInfo($"{_path}/../{PyNabDirectory}/nabd/{SoundDirectory}/fr_FR/{dirToFind}");
-                var searchPAttern = toFind.Substring(toFind.LastIndexOf('/') + 1);
-                var files = di.GetFiles(searchPAttern, SearchOption.TopDirectoryOnly);
-                if (files.Length > 0)
+                // Try for ../../../../somewhere/file.mp3
+                try
                 {
-                    return files[new Random().Next(files.Length - 1)].FullName;
+                    var dirToFind = toFind.Substring(0, toFind.LastIndexOf('/'));
+                    var di = new DirectoryInfo($"{_path}/../{PyNabDirectory}/nabd/{SoundDirectory}/fr_FR/{dirToFind}");
+                    var searchPAttern = toFind.Substring(toFind.LastIndexOf('/') + 1);
+                    var files = di.GetFiles(searchPAttern, SearchOption.TopDirectoryOnly);
+                    if (files.Length > 0)
+                    {
+                        return files[new Random().Next(files.Length - 1)].FullName;
+                    }
                 }
-            }
-            catch
-            { }
+                catch
+                { }
 
 
-            // Finally seach in the main application directories
-            try
-            {
-                var di = new DirectoryInfo($"{_path}/{SoundDirectory}");
-                var searchPAttern = toFind.Substring(toFind.LastIndexOf('/') + 1);
-                var files = di.GetFiles(searchPAttern, SearchOption.TopDirectoryOnly);
-                if (files.Length > 0)
+                // Finally seach in the main application directories
+                try
                 {
-                    return files[new Random().Next(files.Length - 1)].FullName;
+                    var di = new DirectoryInfo($"{_path}/{SoundDirectory}");
+                    var searchPAttern = toFind.Substring(toFind.LastIndexOf('/') + 1);
+                    var files = di.GetFiles(searchPAttern, SearchOption.TopDirectoryOnly);
+                    if (files.Length > 0)
+                    {
+                        return files[new Random().Next(files.Length - 1)].FullName;
+                    }
                 }
-            }
-            catch
-            { }
+                catch
+                { }
 
-            // let's search just for the last part in all the root directories
-            try
-            {
-                var di = new DirectoryInfo($"{_path}/..");
-                var searchPAttern = toFind.Substring(toFind.LastIndexOf('/') + 1);
-                var files = di.GetFiles(searchPAttern, SearchOption.AllDirectories);
-                if (files.Length > 0)
-                {
-                    return files[new Random().Next(files.Length - 1)].FullName;
-                }
+                // let's search just for the last part in all the root directories
+                //try
+                //{
+                //    var di = new DirectoryInfo($"{_path}/..");
+                //    var searchPAttern = toFind.Substring(toFind.LastIndexOf('/') + 1);
+                //    var files = di.GetFiles(searchPAttern, SearchOption.AllDirectories);
+                //    if (files.Length > 0)
+                //    {
+                //        return files[new Random().Next(files.Length - 1)].FullName;
+                //    }
+                //}
+                //catch
+                //{ }
             }
-            catch
-            { }
-
             return string.Empty;
         }
 
