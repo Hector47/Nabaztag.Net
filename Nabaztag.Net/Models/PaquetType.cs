@@ -107,6 +107,12 @@ namespace Nabaztag.Net.Models
         [EnumMember(Value = "gestalt")]
         [JsonProperty(PropertyName = "gestalt")]
         Statistics,
+        /// <summary>
+        /// Config as been updated
+        /// </summary>
+        [EnumMember(Value = "config-update")]
+        [JsonProperty(PropertyName = "config-update")]
+        ConfigUpdate,
 
     }
 }
